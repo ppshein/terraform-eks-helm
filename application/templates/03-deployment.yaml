@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Release.Name }}-app
+  namespace: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "labels" . | nindent 8 }}
+      annotations:
+          rollme: {{ dateInZone "2006-01-02 15:04:05" .Release.Time  "UTC" | quote }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.container.image }}:{{ .Values.version }}
+          imagePullPolicy: {{ .Values.container.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.container.port }}
+          env:
+            - name: LISTEN_PORT
+              value: "80"
+          {{- include "podResources" . | nindent 10 -}}

@@ -1,0 +1,123 @@
+#!/bin/sh
+<<DOC
+  .SYNOPSIS
+    Apply Helm
+  .POSITION_PARAMETER BU
+    Business unit
+  .POSITION_PARAMETER PROJECT
+    Project name
+  .POSITION_PARAMETER ENV
+    Environment name
+  .EXAMPLE
+    ./deploy.sh finance myproject sit latest
+DOC
+
+# e: immediately exit if error
+# u: exit if refer to non existing variable
+# o: return error code of any sub command in pipeline
+set -euo pipefail
+
+YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+TASK=$1
+ARGS=${@:2}
+
+help__namespace="Configuration Namespace for Kubernetes/Helm"
+task_namespace() {
+  local bu=$1
+  local project=$2
+  local environment=$3
+
+  namespace="${bu}-${project}-${environment}-namespace"
+
+  echo "${NC}Here is selected namespace ${GREEN} ${namespace}${NC}"
+}
+
+help__dryRunHelmChart="Dry Run Helm chart to kubernetes"
+task_dryRunHelmChart() {
+  local bu=$1
+  local project=$2
+  local environment=$3
+  local version=$4
+
+  if [[ -z "${bu}" ||  -z "${project}" ||  -z "${environment}" ||  -z "${version}" ]]; then
+    echo "One or more required variable is missing"
+    exit 1
+  fi
+
+  task_namespace "${bu}" "${project}" "${environment}"
+
+  echo "${NC}helm upgrade ${GREEN}${bu}-${project}-${environment}${NC}"
+
+  helm upgrade --install ${bu}-${project}-${environment} --namespace $namespace --create-namespace \
+    --wait --timeout 3m \
+    --dry-run \
+    --set version=$version \
+    --set bu=$bu \
+    --set project=$project \
+    -f values/${bu}/${project}/${environment}.yaml .
+ }
+
+help__deployHelmChart="Dry Run Helm chart to kubernetes"
+task_deployHelmChart() {
+  local bu=$1
+  local project=$2
+  local environment=$3
+  local version=$4
+
+  if [[ -z "${bu}" ||  -z "${project}" ||  -z "${environment}" ||  -z "${version}" ]]; then
+    echo "One or more required variable is missing"
+    exit 1
+  fi
+
+  task_namespace "${bu}" "${project}" "${environment}"
+
+  helm upgrade ${bu}-${project}-${environment} --install \
+    --namespace $namespace --create-namespace \
+    --wait --timeout 3m \
+    --set version=$version \
+    --set bu=$bu \
+    --set project=$project \
+    -f values/${bu}/${project}/${environment}.yaml .
+ }
+
+help__rollBackHelmChart="Rollback services from Kubernetes"
+task_rollBackHelmChart() {
+  local bu=$1
+  local project=$2
+  local environment=$3
+
+  if [[ -z "${bu}" ||  -z "${project}" ||  -z "${environment}" ]]; then
+    echo "One or more required variable is missing"
+    exit 1
+  fi
+
+  task_namespace "${bu}" "${project}" "${environment}"
+
+  helm rollback ${bu}-${project}-${environment} -n $namespace
+
+}
+
+list_all_helps() {
+  compgen -v | grep -E "^help__.*"
+}
+
+NEW_LINE=$'\n'
+if type -t "task_$TASK" &>/dev/null; then
+  task_$TASK $ARGS
+else
+  echo "usage: $0 <task> [<..args>]"
+  echo "task:"
+
+  HELPS=""
+  for help in $(list_all_helps); do
+
+    HELPS="$HELPS    ${help/help__/} |-- ${!help}$NEW_LINE"
+  done
+
+  echo "$HELPS" | column -t -s "|"
+  exit 1
+fi

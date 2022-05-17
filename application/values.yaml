@@ -1,0 +1,20 @@
+podResources:
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
+
+extraPodConfig:
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  terminationGracePeriodSeconds: 50
+
+container:
+  image: dockercloud/hello-world
+  pullPolicy: Always
+  port: 80

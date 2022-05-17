@@ -1,0 +1,19 @@
+# for application layer
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Name }}
+  name: {{ .Release.Name }}-app
+  namespace: {{ .Release.Name }}
+  labels:
+{{- include "labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: {{ .Release.Name }}
+      port: {{ .Values.container.port }}
+      targetPort: {{ .Values.container.port }}
+  selector:
+{{- include "labels" . | nindent 4 }}
+  type: NodePort

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+  name: configmap-{{ .Release.Name }}
+  namespace: {{ .Release.Name }}
+data:
+# it's for furture non-sensitive data information usage, meanwhile please ignore it

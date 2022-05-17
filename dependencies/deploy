@@ -1,0 +1,49 @@
+#!/bin/sh
+<<DOC
+  .SYNOPSIS
+    Apply Helm
+  .POSITION_PARAMETER DEPENDENCY
+    dependency name
+  .EXAMPLE
+    ./deploy [dependency]
+DOC
+
+# e: immediately exit if error
+# u: exit if refer to non existing variable
+# o: return error code of any sub command in pipeline
+set -euo pipefail
+
+TASK=$1
+ARGS=${@:2}
+
+help__deployNginxIngress="Deploy Nginx Ingress Controller with helm"
+task_deployNginxIngress() {
+  helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
+}
+
+help__deployMetricsServer="Deploy Metrics Server with helm"
+task_deployMetricsServer() {
+  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm install metrics-server bitnami/metrics-server
+}
+
+list_all_helps() {
+  compgen -v | grep -E "^help__.*"
+}
+
+NEW_LINE=$'\n'
+if type -t "task_$TASK" &>/dev/null; then
+  task_$TASK $ARGS
+else
+  echo "usage: $0 <task> [<..args>]"
+  echo "task:"
+
+  HELPS=""
+  for help in $(list_all_helps); do
+
+    HELPS="$HELPS    ${help/help__/} |-- ${!help}$NEW_LINE"
+  done
+
+  echo "$HELPS" | column -t -s "|"
+  exit 1
+fi
