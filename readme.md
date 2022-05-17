@@ -1,6 +1,7 @@
 # Project purpose
 
 This project is to provision AWS EKS Cluster with fluentd logs collection. It has three folders:
+
 **- infrastructure**
 	It is to provision AWS EKS cluster with fluentd log collector with terraform. Detail information will be checked inside this folder.
 	
