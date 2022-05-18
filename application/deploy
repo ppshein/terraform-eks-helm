@@ -31,7 +31,7 @@ task_namespace() {
   local project=$2
   local environment=$3
 
-  namespace="${bu}-${project}-${environment}-namespace"
+  namespace="${bu}-${project}-${environment}"
 
   echo "${NC}Here is selected namespace ${GREEN} ${namespace}${NC}"
 }
@@ -49,10 +49,11 @@ task_dryRunHelmChart() {
   fi
 
   task_namespace "${bu}" "${project}" "${environment}"
+  releate_name=$namespace
 
   echo "${NC}helm upgrade ${GREEN}${bu}-${project}-${environment}${NC}"
 
-  helm upgrade --install ${bu}-${project}-${environment} --namespace $namespace --create-namespace \
+  helm upgrade --install $releate_name --namespace $namespace --create-namespace \
     --wait --timeout 3m \
     --dry-run \
     --set version=$version \
@@ -74,8 +75,9 @@ task_deployHelmChart() {
   fi
 
   task_namespace "${bu}" "${project}" "${environment}"
+  releate_name=$namespace
 
-  helm upgrade ${bu}-${project}-${environment} --install \
+  helm upgrade $releate_name --install \
     --namespace $namespace --create-namespace \
     --wait --timeout 3m \
     --set version=$version \
@@ -96,8 +98,8 @@ task_rollBackHelmChart() {
   fi
 
   task_namespace "${bu}" "${project}" "${environment}"
-
-  helm rollback ${bu}-${project}-${environment} -n $namespace
+  releate_name=$namespace
+  helm rollback $releate_name -n $namespace
 
 }
 

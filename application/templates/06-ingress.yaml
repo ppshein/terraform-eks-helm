@@ -10,12 +10,14 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - http:
+  - host: {{ .Values.ingress.host }}
+    http:
       paths:
-      - path: /
+      - path:
         pathType: Prefix
         backend:
           service:
             name: {{ .Release.Name }}-app
             port:
               number: {{ .Values.container.port }}
+        path: /

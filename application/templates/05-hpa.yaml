@@ -1,5 +1,4 @@
 # for HPA scaling
-{{- if .Values.hpa.require -}}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -25,4 +24,3 @@ spec:
       target:
         type: Utilization
         averageUtilization: {{ .Values.hpa.memoryTarget }}
-{{- end -}}

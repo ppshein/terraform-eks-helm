@@ -3,3 +3,6 @@ hpa:
   maxReplicas: 5
   memoryTarget: 50
   cpuTarget: 70
+
+ingress:
+  host: ppshein.com
